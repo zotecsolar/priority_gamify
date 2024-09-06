@@ -85,8 +85,9 @@ function dropTask(e) {
     const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from ID
     const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
 
+    // Append the task to the target slot only if moving to a lower or same slot
     if (currentSlotId === null || targetSlotId >= currentSlotId) {
-        e.target.appendChild(task); // Allow the move
+        e.target.appendChild(task); // Append the task to the new slot
         saveState(); // Save the new state after task movement
     }
 }
