@@ -1,59 +1,82 @@
-// Predefined tasks
-const tasks = [
-    'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 
-    'Task 6', 'Task 7', 'Task 8', 'Task 9', 'Task 10'
-];
+// GitHub Repo and Token Configuration
+const GITHUB_USERNAME = 'zotecsolar';
+const GITHUB_REPOSITORY = 'priority_gamify';
 
-// Function to divide tasks between left and right columns
-function distributeTasks() {
-    const leftTasks = document.getElementById('left-tasks');
-    const rightTasks = document.getElementById('right-tasks');
-    
-    tasks.forEach((task, index) => {
-        const taskElement = createTaskElement(task);
-        if (index % 2 === 0) {
-            leftTasks.appendChild(taskElement);
-        } else {
-            rightTasks.appendChild(taskElement);
+
+// Function to load the task state from GitHub
+async function loadStateFromGitHub() {
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+        headers: {
+            'Accept': 'application/vnd.github.v3.raw',
+            'Authorization': `token ${GITHUB_TOKEN}`
         }
     });
+
+    const data = await response.json();
+    return data;
 }
 
-// Function to create a task element
+// Function to save the task state back to GitHub
+async function saveStateToGitHub(state) {
+    const stateData = btoa(JSON.stringify(state));  // Convert state object to Base64 string
+    
+    // First, get the file's current SHA (required by GitHub for file updates)
+    const getFileResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+        headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `token ${GITHUB_TOKEN}`
+        }
+    });
+
+    const fileData = await getFileResponse.json();
+    const fileSha = fileData.sha;  // Get the SHA of the file for updating
+
+    // Now, update the file with the new state
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+            message: 'Update task state',
+            content: stateData,  // Base64-encoded task state
+            sha: fileSha  // The SHA of the previous file version
+        })
+    });
+
+    const result = await response.json();
+    console.log('State updated on GitHub:', result);
+}
+
+// Function to create task elements
 function createTaskElement(taskText) {
     const task = document.createElement('div');
     task.classList.add('task');
     task.setAttribute('draggable', 'true');
     task.textContent = taskText;
-    task.id = taskText; // Set ID to match task text for saving state
+    task.id = taskText;  // Set the ID to the task name for identification
     task.addEventListener('dragstart', dragStart);
     task.addEventListener('dragend', dragEnd);
     return task;
 }
 
-// Add priority slots dynamically (now 10 slots)
-function createPrioritySlots() {
-    const prioritySlots = document.getElementById('priority-slots');
-    for (let i = 1; i <= tasks.length; i++) {
-        const slot = document.createElement('div');
-        slot.classList.add('slot');
-        slot.id = `slot-${i}`;
-        slot.addEventListener('dragover', dragOver);
-        slot.addEventListener('drop', dropTask);
-        prioritySlots.appendChild(slot);
-    }
-}
-
-// Drag-and-drop functions
+// Function to handle drag start
 function dragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.id);
+    e.dataTransfer.setData('text', e.target.id);
 }
 
+// Function to handle drag end
+function dragEnd(e) {
+    saveCurrentState();  // Save the state each time a task is moved
+}
+
+// Function to handle drag over a slot (needed to allow dropping)
 function dragOver(e) {
     e.preventDefault();
 }
 
-
+// Function to handle dropping tasks into slots with the rule that prevents moving up
 function dropTask(e) {
     e.preventDefault();
     
@@ -63,71 +86,70 @@ function dropTask(e) {
     const currentSlot = task.parentElement;
     const targetSlot = e.target;
     
-    // Get slot numbers (assuming slots are named slot-1, slot-2, etc.)
-    const currentSlotNumber = parseInt(currentSlot.id.split('-')[1]);
+    // Get the current and target slot numbers
+    const currentSlotNumber = currentSlot.id ? parseInt(currentSlot.id.split('-')[1]) : null;
     const targetSlotNumber = parseInt(targetSlot.id.split('-')[1]);
-
-    // Allow drop only if task is moved to a lower slot (higher number)
-    if (targetSlotNumber >= currentSlotNumber || !currentSlot.classList.contains('slot')) {
-        targetSlot.appendChild(task); // Move task to target slot
-        saveState(); // Save the new state
+    
+    // Check if the task is moving to a lower or equal priority slot (higher number)
+    if (currentSlotNumber === null || targetSlotNumber >= currentSlotNumber) {
+        targetSlot.appendChild(task);  // Move the task to the new slot
+        saveCurrentState();  // Save the updated state
     } else {
-        alert("Non Permesso!");
+        alert("You can only move tasks down, not up!");  // Prevent upward movement
     }
 }
 
+// Load the task state and populate the tasks and slots
+window.onload = async function() {
+    const state = await loadStateFromGitHub();
+    
+    // Populate left column tasks
+    state.leftTasks.forEach(task => {
+        const taskElement = createTaskElement(task);
+        document.getElementById('left-tasks').appendChild(taskElement);
+    });
 
-function dragEnd() {
-    saveState();
-}
+    // Populate right column tasks
+    state.rightTasks.forEach(task => {
+        const taskElement = createTaskElement(task);
+        document.getElementById('right-tasks').appendChild(taskElement);
+    });
 
-// Save the current state of tasks and slots
-function saveState() {
-    const state = {
+    // Populate priority slots
+    for (const slotId in state.slots) {
+        const slot = document.getElementById(slotId);
+        state.slots[slotId].forEach(task => {
+            const taskElement = createTaskElement(task);
+            slot.appendChild(taskElement);
+        });
+    }
+};
+
+// Save the current state to GitHub
+function saveCurrentState() {
+    const newState = {
         leftTasks: getTaskList('left-tasks'),
         rightTasks: getTaskList('right-tasks'),
         slots: {}
     };
-    for (let i = 1; i <= tasks.length; i++) {
-        state.slots[`slot-${i}`] = getTaskList(`slot-${i}`);
+
+    // Get the tasks from each slot and save them in the state
+    for (let i = 1; i <= 10; i++) {
+        newState.slots[`slot-${i}`] = getTaskList(`slot-${i}`);
     }
-    localStorage.setItem('taskState', JSON.stringify(state));
+
+    // Save the new state to GitHub
+    saveStateToGitHub(newState);
 }
 
-// Helper function to get task IDs from a container
+// Helper function to get task list from a specific container
 function getTaskList(containerId) {
     const container = document.getElementById(containerId);
     return Array.from(container.children).map(task => task.id);
 }
 
-// Load the saved state from localStorage
-function loadState() {
-    const savedState = JSON.parse(localStorage.getItem('taskState'));
-    if (savedState) {
-        // Load left and right columns
-        loadTasks('left-tasks', savedState.leftTasks);
-        loadTasks('right-tasks', savedState.rightTasks);
-        
-        // Load priority slots
-        for (let i = 1; i <= tasks.length; i++) {
-            loadTasks(`slot-${i}`, savedState.slots[`slot-${i}`]);
-        }
-    } else {
-        distributeTasks(); // If no saved state, distribute tasks
-    }
-}
-
-// Helper function to load tasks into a container
-function loadTasks(containerId, taskList) {
-    const container = document.getElementById(containerId);
-    taskList.forEach(taskText => {
-        const taskElement = createTaskElement(taskText);
-        container.appendChild(taskElement);
-    });
-}
-
-// Initialize the app
-window.onload = function () {
-    createPrioritySlots();
-    loadState();
-};
+// Add drag-and-drop event listeners to all priority slots
+document.querySelectorAll('.slot').forEach(slot => {
+    slot.addEventListener('dragover', dragOver);
+    slot.addEventListener('drop', dropTask);
+});
