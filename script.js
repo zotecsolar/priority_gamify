@@ -7,7 +7,7 @@ const tasks = [
 ];
 
 // Version key to track task changes
-const versionKey = 'task_v1'; // Update this when tasks are changed
+const versionKey = 'task_v2'; // Update this when tasks are changed
 
 // Reset localStorage if version is updated
 function checkAndResetStorage() {
@@ -20,7 +20,7 @@ function checkAndResetStorage() {
 
 checkAndResetStorage(); // Reset if necessary
 
-// Function to distribute tasks
+// Function to distribute tasks to left and right columns
 function distributeTasks() {
     const leftTasks = document.getElementById('left-tasks');
     const rightTasks = document.getElementById('right-tasks');
@@ -63,7 +63,6 @@ function createPrioritySlots() {
 // Drag-and-drop functions
 function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
-    console.log("Drag Start: ", e.target.id);
 }
 
 function dragOver(e) {
@@ -74,20 +73,22 @@ function dropTask(e) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
-    
-    // Check if task is already inside a slot
     const currentSlot = task.parentElement;
-    if (e.target.classList.contains('slot')) {
-        const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from ID
-        const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
 
-        // Allow only if moving to a lower or same slot, or from the task column
-        if (currentSlotId === null || targetSlotId >= currentSlotId) {
-            e.target.appendChild(task); // Append task to new slot
-            saveState(); // Save new task positions
-        } else {
-            console.log("Cannot move to a higher slot.");
-        }
+    // Allow drop only in slots, not columns
+    if (!e.target.classList.contains('slot')) {
+        return; // Don't allow the task to move back to columns
+    }
+
+    const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from target slot
+    const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
+
+    // Allow only if moving to a lower or same slot, or if coming from a column (null currentSlotId)
+    if (currentSlotId === null || targetSlotId >= currentSlotId) {
+        e.target.appendChild(task); // Append the task to the new slot
+        saveState(); // Save new task positions
+    } else {
+        console.log("Cannot move to a higher slot."); // Prevent upward movement
     }
 }
 
