@@ -53,13 +53,29 @@ function dragOver(e) {
     e.preventDefault();
 }
 
+
 function dropTask(e) {
     e.preventDefault();
+    
     const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
-    e.target.appendChild(task);
-    saveState();
+    
+    const currentSlot = task.parentElement;
+    const targetSlot = e.target;
+    
+    // Get slot numbers (assuming slots are named slot-1, slot-2, etc.)
+    const currentSlotNumber = parseInt(currentSlot.id.split('-')[1]);
+    const targetSlotNumber = parseInt(targetSlot.id.split('-')[1]);
+
+    // Allow drop only if task is moved to a lower slot (higher number)
+    if (targetSlotNumber >= currentSlotNumber || !currentSlot.classList.contains('slot')) {
+        targetSlot.appendChild(task); // Move task to target slot
+        saveState(); // Save the new state
+    } else {
+        alert("Non Permesso!");
+    }
 }
+
 
 function dragEnd() {
     saveState();
