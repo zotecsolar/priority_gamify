@@ -1,12 +1,16 @@
 // GitHub Repo and Token Configuration
 const GITHUB_USERNAME = 'zotecsolar';
 const GITHUB_REPOSITORY = 'priority_gamify';
-let GITHUB_TOKEN = '';  // Leave it empty for now
-
+let GITHUB_TOKEN = '';  // Initially empty, we will set it manually in the console
 
 // Function to load the task state from GitHub
 async function loadStateFromGitHub() {
-    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+    if (!GITHUB_TOKEN) {
+        console.error("GitHub token is missing! Set it in the console.");
+        return;
+    }
+
+    const response = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
         headers: {
             'Accept': 'application/vnd.github.v3.raw',
             'Authorization': `token ${GITHUB_TOKEN}`
@@ -19,10 +23,15 @@ async function loadStateFromGitHub() {
 
 // Function to save the task state back to GitHub
 async function saveStateToGitHub(state) {
+    if (!GITHUB_TOKEN) {
+        console.error("GitHub token is missing! Set it in the console.");
+        return;
+    }
+
     const stateData = btoa(JSON.stringify(state));  // Convert state object to Base64 string
     
     // First, get the file's current SHA (required by GitHub for file updates)
-    const getFileResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+    const getFileResponse = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
         headers: {
             'Accept': 'application/vnd.github.v3+json',
             'Authorization': `token ${GITHUB_TOKEN}`
@@ -33,7 +42,7 @@ async function saveStateToGitHub(state) {
     const fileSha = fileData.sha;  // Get the SHA of the file for updating
 
     // Now, update the file with the new state
-    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+    const response = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
         method: 'PUT',
         headers: {
             'Authorization': `token ${GITHUB_TOKEN}`,
@@ -49,6 +58,7 @@ async function saveStateToGitHub(state) {
     const result = await response.json();
     console.log('State updated on GitHub:', result);
 }
+
 
 // Function to create task elements
 function createTaskElement(taskText) {
