@@ -1,6 +1,7 @@
 // GitHub Repo and Token Configuration
 const GITHUB_USERNAME = 'zotecsolar';
 const GITHUB_REPOSITORY = 'priority_gamify';
+let GITHUB_TOKEN = '';  // Leave it empty for now
 
 
 // Function to load the task state from GitHub
