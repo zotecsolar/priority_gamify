@@ -4,25 +4,7 @@ const tasks = [
     'Task 6', 'Task 7', 'Task 8', 'Task 9', 'Task 10'
 ];
 
-<<<<<<< HEAD
 // Function to divide tasks between left and right columns
-=======
-// Version key to track task changes
-const versionKey = 'task_v2'; // Update this when tasks are changed
-
-// Reset localStorage if version is updated
-function checkAndResetStorage() {
-    const savedVersion = localStorage.getItem('taskVersion');
-    if (savedVersion !== versionKey) {
-        localStorage.clear(); // Clear storage
-        localStorage.setItem('taskVersion', versionKey); // Set new version
-    }
-}
-
-checkAndResetStorage(); // Reset if necessary
-
-// Function to distribute tasks to left and right columns
->>>>>>> f4c674d3a4e0e032ad9886f7ac33278bcd9ad766
 function distributeTasks() {
     const leftTasks = document.getElementById('left-tasks');
     const rightTasks = document.getElementById('right-tasks');
@@ -68,35 +50,15 @@ function dragStart(e) {
 }
 
 function dragOver(e) {
-    e.preventDefault(); // Allow drop
+    e.preventDefault();
 }
 
 function dropTask(e) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
-<<<<<<< HEAD
     e.target.appendChild(task);
     saveState();
-=======
-    const currentSlot = task.parentElement;
-
-    // Allow drop only in slots, not columns
-    if (!e.target.classList.contains('slot')) {
-        return; // Don't allow the task to move back to columns
-    }
-
-    const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from target slot
-    const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
-
-    // Allow only if moving to a lower or same slot, or if coming from a column (null currentSlotId)
-    if (currentSlotId === null || targetSlotId >= currentSlotId) {
-        e.target.appendChild(task); // Append the task to the new slot
-        saveState(); // Save new task positions
-    } else {
-        console.log("Cannot move to a higher slot."); // Prevent upward movement
-    }
->>>>>>> f4c674d3a4e0e032ad9886f7ac33278bcd9ad766
 }
 
 function dragEnd() {
