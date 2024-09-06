@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.slots-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px;
+}
+
+.slot {
+    width: 150px;
+    height: 400px;
+    border: 2px dashed #ccc;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.tasks-container {
+    margin-top: 30px;
+}
+
+.task {
+    width: 120px;
+    padding: 10px;
+    margin: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: grab;
+}
+
+.task:hover {
+    background-color: #e0e0e0;
+}
