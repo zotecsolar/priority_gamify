@@ -1,7 +1,23 @@
 // Predefined tasks
 const tasks = [
-    'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 
-    'Task 6', 'Task 7', 'Task 8', 'Task 9', 'Task 10'
+	'Preventivatore (Digitalizzazione)',
+	'Native APPs (Digitalizzazione)',
+	'Chabot (Digitalizzazione)',
+	'Inventario (Magazzino)',
+	'Listini (Contabilità)',
+	'Documenti Firmabili (Contabilità)',
+	'Visibilità Organica (Branding)',
+	'Customer Engagement (Branding)',
+	'Supporto Sopralluoghi (Installazioni)',
+	'Assistenza (Installazioni)',
+	'Assistenza (Rete Vendita)',
+	'Supporto Sopralluoghi (Rete Vendita)',
+	'Supporto Preventivazione (Rete Vendite)',
+	'Lead Generated (Rete Vendite)',
+	'Ticketing/Tasks (Business Flow)',
+	'CRM/ERP System (Business Flow)',
+	'Algoritmo di Automazione (Business Flow)',
+	'Index (Data Center)'
 ];
 
 // Function to divide tasks between left and right columns
