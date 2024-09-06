@@ -17,7 +17,8 @@ const tasks = [
 	'Ticketing/Tasks (Business Flow)',
 	'CRM/ERP System (Business Flow)',
 	'Algoritmo di Automazione (Business Flow)',
-	'Index (Data Center)'
+	'Index (Data Center)',
+	'Open API (Data Center)'
 ];
 
 // Function to divide tasks between left and right columns
