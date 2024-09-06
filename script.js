@@ -1,15 +1,36 @@
-// Get all the task elements and slots
-const tasks = document.querySelectorAll('.task');
+// Get task columns and slots
+const leftTasks = document.getElementById('left-tasks');
+const rightTasks = document.getElementById('right-tasks');
 const slots = document.querySelectorAll('.slot');
+const addTaskButton = document.getElementById('add-task');
 
-// Add drag event listeners to tasks
-tasks.forEach(task => {
-    task.addEventListener('dragstart', dragStart);
-    task.addEventListener('dragend', dragEnd);
+// Event listeners for adding tasks
+addTaskButton.addEventListener('click', () => {
+    const newTaskInput = document.getElementById('new-task');
+    const taskText = newTaskInput.value.trim();
+    
+    if (taskText) {
+        const task = createTaskElement(taskText);
+        leftTasks.appendChild(task);  // Add task to left column
+        newTaskInput.value = '';
+        saveState();
+    }
 });
 
+// Create draggable task element
+function createTaskElement(text) {
+    const task = document.createElement('div');
+    task.classList.add('task');
+    task.setAttribute('draggable', 'true');
+    task.textContent = text;
+    task.addEventListener('dragstart', dragStart);
+    task.addEventListener('dragend', dragEnd);
+    return task;
+}
+
+// Drag and Drop functions
 function dragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.id);
+    e.dataTransfer.setData('text', e.target.id);
     setTimeout(() => {
         e.target.classList.add('hidden');
     }, 0);
@@ -19,7 +40,6 @@ function dragEnd(e) {
     e.target.classList.remove('hidden');
 }
 
-// Add event listeners for the drop zones (slots)
 slots.forEach(slot => {
     slot.addEventListener('dragover', dragOver);
     slot.addEventListener('drop', dropTask);
@@ -30,25 +50,48 @@ function dragOver(e) {
 }
 
 function dropTask(e) {
-    const taskId = e.dataTransfer.getData('text/plain');
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
     e.target.appendChild(task);
+    saveState();
 }
 
-
-function calculatePriority() {
-    let score = 0;
+// Save task states
+function saveState() {
+    const taskData = {
+        left: getTasksFromColumn(leftTasks),
+        right: getTasksFromColumn(rightTasks),
+        slots: []
+    };
     slots.forEach((slot, index) => {
-        const tasksInSlot = slot.querySelectorAll('.task');
-        tasksInSlot.forEach(() => {
-            score += (5 - index); // Higher slots give more points
-        });
+        taskData.slots[index] = getTasksFromColumn(slot);
     });
-    alert(`Current Priority Score: ${score}`);
+    localStorage.setItem('taskData', JSON.stringify(taskData));
 }
 
-// Add a button to calculate the priority score
-const calculateButton = document.createElement('button');
-calculateButton.textContent = 'Calculate Priority Score';
-calculateButton.addEventListener('click', calculatePriority);
-document.body.appendChild(calculateButton);
+function getTasksFromColumn(column) {
+    return Array.from(column.children).map(task => task.textContent);
+}
+
+// Load saved state
+function loadState() {
+    const savedData = JSON.parse(localStorage.getItem('taskData'));
+    if (savedData) {
+        loadTasks(savedData.left, leftTasks);
+        loadTasks(savedData.right, rightTasks);
+        slots.forEach((slot, index) => {
+            loadTasks(savedData.slots[index], slot);
+        });
+    }
+}
+
+function loadTasks(taskArray, column) {
+    taskArray.forEach(taskText => {
+        const task = createTaskElement(taskText);
+        column.appendChild(task);
+    });
+}
+
+// Initialize saved state on page load
+window.onload = loadState;

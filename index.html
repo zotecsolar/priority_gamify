@@ -7,20 +7,41 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Task Prioritization Game</h1>
-    <div class="slots-container">
-        <div class="slot" id="slot-1">Highest Priority</div>
-        <div class="slot" id="slot-2"></div>
-        <div class="slot" id="slot-3"></div>
-        <div class="slot" id="slot-4"></div>
-        <div class="slot" id="slot-5">Lowest Priority</div>
+    <h1>Task Prioritization Tool</h1>
+    
+    <!-- Form to add new tasks -->
+    <div class="task-form">
+        <input type="text" id="new-task" placeholder="Add new task" />
+        <button id="add-task">Add Task</button>
     </div>
+    
+    <!-- Container for tasks and slots -->
+    <div class="main-container">
+        <!-- Left column for tasks -->
+        <div class="task-column" id="left-column">
+            <h2>Left Column Tasks</h2>
+            <div class="task-list" id="left-tasks">
+                <!-- Dynamically added tasks will appear here -->
+            </div>
+        </div>
 
-    <div class="tasks-container">
-        <div class="task" draggable="true" id="task-1">Task 1</div>
-        <div class="task" draggable="true" id="task-2">Task 2</div>
-        <div class="task" draggable="true" id="task-3">Task 3</div>
-        <div class="task" draggable="true" id="task-4">Task 4</div>
+        <!-- Center priority slots -->
+        <div class="priority-slots">
+            <h2>Priority Slots</h2>
+            <div class="slot" id="slot-1">1</div>
+            <div class="slot" id="slot-2">2</div>
+            <div class="slot" id="slot-3">3</div>
+            <div class="slot" id="slot-4">4</div>
+            <div class="slot" id="slot-5">5</div>
+        </div>
+
+        <!-- Right column for tasks -->
+        <div class="task-column" id="right-column">
+            <h2>Right Column Tasks</h2>
+            <div class="task-list" id="right-tasks">
+                <!-- Dynamically added tasks will appear here -->
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
