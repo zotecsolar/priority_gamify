@@ -63,44 +63,35 @@ function createPrioritySlots() {
 // Drag-and-drop functions
 function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
-    console.log("Drag Start: ", e.target.id); // Debugging log
+    console.log("Drag Start: ", e.target.id);
 }
 
 function dragOver(e) {
     e.preventDefault(); // Allow drop
-    console.log("Drag Over: ", e.target.id); // Debugging log
 }
 
 function dropTask(e) {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event propagation to other elements
     const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
+    
+    // Check if task is already inside a slot
     const currentSlot = task.parentElement;
+    if (e.target.classList.contains('slot')) {
+        const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from ID
+        const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
 
-    console.log("Drop Task: ", taskId, " into ", e.target.id); // Debugging log
-
-    // Prevent moving back to left or right columns
-    if (e.target.classList.contains('task-column')) {
-        console.log("Task can't go back to left/right columns.");
-        return; // Do nothing, task can't go back
-    }
-
-    // Allow only if moving to a lower or same slot
-    const targetSlotId = parseInt(e.target.id.split('-')[1], 10); // Get slot number from ID
-    const currentSlotId = currentSlot.id ? parseInt(currentSlot.id.split('-')[1], 10) : null;
-
-    if (currentSlotId === null || targetSlotId >= currentSlotId) {
-        e.target.appendChild(task); // Append the task to the new slot
-        console.log("Task moved to slot: ", e.target.id); // Debugging log
-        saveState(); // Save the new state after task movement
-    } else {
-        console.log("Invalid move, can't move to a higher slot."); // Debugging log
+        // Allow only if moving to a lower or same slot, or from the task column
+        if (currentSlotId === null || targetSlotId >= currentSlotId) {
+            e.target.appendChild(task); // Append task to new slot
+            saveState(); // Save new task positions
+        } else {
+            console.log("Cannot move to a higher slot.");
+        }
     }
 }
 
-function dragEnd(e) {
-    console.log("Drag End: ", e.target.id); // Debugging log
+function dragEnd() {
     saveState();
 }
 
@@ -115,7 +106,6 @@ function saveState() {
         state.slots[`slot-${i}`] = getTaskList(`slot-${i}`);
     }
     localStorage.setItem('taskState', JSON.stringify(state));
-    console.log("State Saved: ", state); // Debugging log
 }
 
 // Get task IDs from container
@@ -133,7 +123,6 @@ function loadState() {
         for (let i = 1; i <= tasks.length; i++) {
             loadTasks(`slot-${i}`, savedState.slots[`slot-${i}`]);
         }
-        console.log("State Loaded: ", savedState); // Debugging log
     } else {
         distributeTasks(); // Distribute tasks if no saved state
     }
