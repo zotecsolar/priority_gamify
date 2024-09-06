@@ -1,11 +1,12 @@
 // Predefined tasks
 const tasks = [
-    'Updated Task 1', 'Updated Task 2', 'Updated Task 3', 
-    'Updated Task 4', 'Updated Task 5', 'Updated Task 6', 
-    'Updated Task 7', 'Updated Task 8', 'Updated Task 9', 
-    'Updated Task 10'
+    'Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5', 
+    'Task 6', 'Task 7', 'Task 8', 'Task 9', 'Task 10'
 ];
 
+<<<<<<< HEAD
+// Function to divide tasks between left and right columns
+=======
 // Version key to track task changes
 const versionKey = 'task_v2'; // Update this when tasks are changed
 
@@ -21,6 +22,7 @@ function checkAndResetStorage() {
 checkAndResetStorage(); // Reset if necessary
 
 // Function to distribute tasks to left and right columns
+>>>>>>> f4c674d3a4e0e032ad9886f7ac33278bcd9ad766
 function distributeTasks() {
     const leftTasks = document.getElementById('left-tasks');
     const rightTasks = document.getElementById('right-tasks');
@@ -41,13 +43,13 @@ function createTaskElement(taskText) {
     task.classList.add('task');
     task.setAttribute('draggable', 'true');
     task.textContent = taskText;
-    task.id = taskText;
+    task.id = taskText; // Set ID to match task text for saving state
     task.addEventListener('dragstart', dragStart);
     task.addEventListener('dragend', dragEnd);
     return task;
 }
 
-// Add priority slots dynamically (10 slots)
+// Add priority slots dynamically (now 10 slots)
 function createPrioritySlots() {
     const prioritySlots = document.getElementById('priority-slots');
     for (let i = 1; i <= tasks.length; i++) {
@@ -73,6 +75,10 @@ function dropTask(e) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text');
     const task = document.getElementById(taskId);
+<<<<<<< HEAD
+    e.target.appendChild(task);
+    saveState();
+=======
     const currentSlot = task.parentElement;
 
     // Allow drop only in slots, not columns
@@ -90,6 +96,7 @@ function dropTask(e) {
     } else {
         console.log("Cannot move to a higher slot."); // Prevent upward movement
     }
+>>>>>>> f4c674d3a4e0e032ad9886f7ac33278bcd9ad766
 }
 
 function dragEnd() {
@@ -109,27 +116,30 @@ function saveState() {
     localStorage.setItem('taskState', JSON.stringify(state));
 }
 
-// Get task IDs from container
+// Helper function to get task IDs from a container
 function getTaskList(containerId) {
     const container = document.getElementById(containerId);
     return Array.from(container.children).map(task => task.id);
 }
 
-// Load saved state
+// Load the saved state from localStorage
 function loadState() {
     const savedState = JSON.parse(localStorage.getItem('taskState'));
     if (savedState) {
+        // Load left and right columns
         loadTasks('left-tasks', savedState.leftTasks);
         loadTasks('right-tasks', savedState.rightTasks);
+        
+        // Load priority slots
         for (let i = 1; i <= tasks.length; i++) {
             loadTasks(`slot-${i}`, savedState.slots[`slot-${i}`]);
         }
     } else {
-        distributeTasks(); // Distribute tasks if no saved state
+        distributeTasks(); // If no saved state, distribute tasks
     }
 }
 
-// Load tasks into a container
+// Helper function to load tasks into a container
 function loadTasks(containerId, taskList) {
     const container = document.getElementById(containerId);
     taskList.forEach(taskText => {
