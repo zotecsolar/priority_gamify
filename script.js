@@ -1,64 +1,76 @@
-// GitHub Repo and Token Configuration
+// GitHub Repo Configuration
 const GITHUB_USERNAME = 'zotecsolar';
 const GITHUB_REPOSITORY = 'priority_gamify';
-let GITHUB_TOKEN = '';  // Initially empty, we will set it manually in the console
+let GITHUB_TOKEN = '';  // Token will be set manually via the input field
 
 // Function to load the task state from GitHub
 async function loadStateFromGitHub() {
     if (!GITHUB_TOKEN) {
-        console.error("GitHub token is missing! Set it in the console.");
+        console.error("GitHub token is missing! Set it using the input field.");
         return;
     }
 
-    const response = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
-        headers: {
-            'Accept': 'application/vnd.github.v3.raw',
-            'Authorization': `token ${GITHUB_TOKEN}`
-        }
-    });
+    try {
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+            headers: {
+                'Accept': 'application/vnd.github.v3.raw',
+                'Authorization': `token ${GITHUB_TOKEN}`
+            }
+        });
 
-    const data = await response.json();
-    return data;
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("State loaded from GitHub:", data);
+        return data;
+    } catch (error) {
+        console.error("Failed to load state from GitHub:", error);
+    }
 }
 
 // Function to save the task state back to GitHub
 async function saveStateToGitHub(state) {
     if (!GITHUB_TOKEN) {
-        console.error("GitHub token is missing! Set it in the console.");
+        console.error("GitHub token is missing! Set it using the input field.");
         return;
     }
 
     const stateData = btoa(JSON.stringify(state));  // Convert state object to Base64 string
-    
-    // First, get the file's current SHA (required by GitHub for file updates)
-    const getFileResponse = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
-        headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token ${GITHUB_TOKEN}`
-        }
-    });
 
-    const fileData = await getFileResponse.json();
-    const fileSha = fileData.sha;  // Get the SHA of the file for updating
+    try {
+        // First, get the file's current SHA (required by GitHub for file updates)
+        const getFileResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `token ${GITHUB_TOKEN}`
+            }
+        });
 
-    // Now, update the file with the new state
-    const response = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({
-            message: 'Update task state',
-            content: stateData,  // Base64-encoded task state
-            sha: fileSha  // The SHA of the previous file version
-        })
-    });
+        const fileData = await getFileResponse.json();
+        const fileSha = fileData.sha;  // Get the SHA of the file for updating
 
-    const result = await response.json();
-    console.log('State updated on GitHub:', result);
+        // Now, update the file with the new state
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/state.json`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+                message: 'Update task state',
+                content: stateData,  // Base64-encoded task state
+                sha: fileSha  // The SHA of the previous file version
+            })
+        });
+
+        const result = await response.json();
+        console.log('State updated on GitHub:', result);
+    } catch (error) {
+        console.error("Failed to save state to GitHub:", error);
+    }
 }
-
 
 // Function to create task elements
 function createTaskElement(taskText) {
@@ -114,6 +126,8 @@ function dropTask(e) {
 window.onload = async function() {
     const state = await loadStateFromGitHub();
     
+    if (!state) return;
+
     // Populate left column tasks
     state.leftTasks.forEach(task => {
         const taskElement = createTaskElement(task);
@@ -163,4 +177,16 @@ function getTaskList(containerId) {
 document.querySelectorAll('.slot').forEach(slot => {
     slot.addEventListener('dragover', dragOver);
     slot.addEventListener('drop', dropTask);
+});
+
+// Set the token when the button is clicked
+document.getElementById('submit-token').addEventListener('click', function() {
+    GITHUB_TOKEN = document.getElementById('github-token').value;
+
+    if (GITHUB_TOKEN) {
+        // Once the token is set, load the state from GitHub
+        loadStateFromGitHub();
+    } else {
+        alert("Please enter a GitHub token!");
+    }
 });
