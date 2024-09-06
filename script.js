@@ -10,7 +10,7 @@ async function loadStateFromGitHub() {
         return;
     }
 
-    const response = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
+    const response = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
         headers: {
             'Accept': 'application/vnd.github.v3.raw',
             'Authorization': `token ${GITHUB_TOKEN}`
@@ -31,7 +31,7 @@ async function saveStateToGitHub(state) {
     const stateData = btoa(JSON.stringify(state));  // Convert state object to Base64 string
     
     // First, get the file's current SHA (required by GitHub for file updates)
-    const getFileResponse = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
+    const getFileResponse = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
         headers: {
             'Accept': 'application/vnd.github.v3+json',
             'Authorization': `token ${GITHUB_TOKEN}`
@@ -42,7 +42,7 @@ async function saveStateToGitHub(state) {
     const fileSha = fileData.sha;  // Get the SHA of the file for updating
 
     // Now, update the file with the new state
-    const response = await fetch(`https://api.github.com/repos/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY/contents/state.json`, {
+    const response = await fetch(`https://api.github.com/repos/zotecsolar/priority_gamify/contents/state.json`, {
         method: 'PUT',
         headers: {
             'Authorization': `token ${GITHUB_TOKEN}`,
