@@ -31,10 +31,10 @@ function createTaskElement(taskText) {
     return task;
 }
 
-// Add priority slots dynamically
+// Add priority slots dynamically (now 10 slots)
 function createPrioritySlots() {
     const prioritySlots = document.getElementById('priority-slots');
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= tasks.length; i++) {
         const slot = document.createElement('div');
         slot.classList.add('slot');
         slot.id = `slot-${i}`;
@@ -72,7 +72,7 @@ function saveState() {
         rightTasks: getTaskList('right-tasks'),
         slots: {}
     };
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= tasks.length; i++) {
         state.slots[`slot-${i}`] = getTaskList(`slot-${i}`);
     }
     localStorage.setItem('taskState', JSON.stringify(state));
@@ -93,7 +93,7 @@ function loadState() {
         loadTasks('right-tasks', savedState.rightTasks);
         
         // Load priority slots
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= tasks.length; i++) {
             loadTasks(`slot-${i}`, savedState.slots[`slot-${i}`]);
         }
     } else {

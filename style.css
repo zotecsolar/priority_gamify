@@ -6,14 +6,14 @@ body {
 .main-container {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    padding: 10px; /* More compact padding */
 }
 
 .task-column {
     width: 20%;
     border: 1px solid #ccc;
     padding: 10px;
-    height: 500px;
+    height: 450px; /* Condensed height */
     overflow-y: auto;
 }
 
@@ -21,15 +21,15 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 40%;
+    width: 30%; /* Slightly narrower */
     border: 1px solid #ccc;
     padding: 10px;
 }
 
 .slot {
     border: 2px dashed #ccc;
-    height: 60px;
-    margin: 10px;
+    height: 50px; /* Smaller height for slots */
+    margin: 5px; /* Less margin for better use of space */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -37,11 +37,19 @@ body {
 }
 
 .task {
-    background-color: #e0f7fa;
+    background: linear-gradient(145deg, #d1d1d1, #f3f3f3); /* Metallic gradient */
     margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #0097a7;
+    padding: 15px; /* Bigger padding for bigger task size */
+    border: 1px solid #888888;
+    color: #333;
+    font-weight: bold;
     cursor: grab;
+    border-radius: 5px; /* Add some curvature */
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2); /* Add slight shadow for "metal" look */
+}
+
+.task:hover {
+    background: linear-gradient(145deg, #c1c1c1, #e0e0e0); /* Slight hover effect */
 }
 
 @media (max-width: 768px) {
@@ -52,6 +60,6 @@ body {
     
     .task-column, .priority-slots {
         width: 90%;
-        margin-bottom: 20px;
+        margin-bottom: 10px; /* Reduced margin on mobile */
     }
 }
