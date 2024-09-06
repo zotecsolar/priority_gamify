@@ -23,8 +23,11 @@ async function loadStateFromGitHub() {
         }
 
         const data = await response.json();
-        console.log("State loaded from GitHub:", data);
-        return data;
+        const decodedContent = atob(data.content);
+        const parsedData = JSON.parse(decodedContent);
+
+        console.log("State loaded from GitHub:", parsedData);
+        return parsedData;
     } catch (error) {
         console.error("Failed to load state from GitHub:", error);
     }
@@ -81,6 +84,7 @@ function createTaskElement(taskText) {
     task.id = taskText;  // Set the ID to the task name for identification
     task.addEventListener('dragstart', dragStart);
     task.addEventListener('dragend', dragEnd);
+    
     return task;
 }
 
@@ -108,11 +112,17 @@ function dropTask(e) {
     
     const currentSlot = task.parentElement;
     const targetSlot = e.target;
+
+    // Prevent moving tasks back to columns
+    if (currentSlot.classList.contains('task-column') && targetSlot.classList.contains('task-column')) {
+        alert("Tasks cannot be moved back to columns!");
+        return;
+    }
     
     // Get the current and target slot numbers
     const currentSlotNumber = currentSlot.id ? parseInt(currentSlot.id.split('-')[1]) : null;
     const targetSlotNumber = parseInt(targetSlot.id.split('-')[1]);
-    
+
     // Check if the task is moving to a lower or equal priority slot (higher number)
     if (currentSlotNumber === null || targetSlotNumber >= currentSlotNumber) {
         targetSlot.appendChild(task);  // Move the task to the new slot
@@ -140,6 +150,18 @@ window.onload = async function() {
         document.getElementById('right-tasks').appendChild(taskElement);
     });
 
+    // Create enough center slots matching total tasks
+    const totalTasks = state.leftTasks.length + state.rightTasks.length;
+    const prioritySlotsContainer = document.getElementById('priority-slots');
+    for (let i = 1; i <= totalTasks; i++) {
+        const slot = document.createElement('div');
+        slot.classList.add('slot');
+        slot.id = `slot-${i}`;
+        slot.addEventListener('dragover', dragOver);
+        slot.addEventListener('drop', dropTask);
+        prioritySlotsContainer.appendChild(slot);
+    }
+
     // Populate priority slots
     for (const slotId in state.slots) {
         const slot = document.getElementById(slotId);
@@ -159,7 +181,7 @@ function saveCurrentState() {
     };
 
     // Get the tasks from each slot and save them in the state
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= newState.leftTasks.length + newState.rightTasks.length; i++) {
         newState.slots[`slot-${i}`] = getTaskList(`slot-${i}`);
     }
 
@@ -173,18 +195,11 @@ function getTaskList(containerId) {
     return Array.from(container.children).map(task => task.id);
 }
 
-// Add drag-and-drop event listeners to all priority slots
-document.querySelectorAll('.slot').forEach(slot => {
-    slot.addEventListener('dragover', dragOver);
-    slot.addEventListener('drop', dropTask);
-});
-
-// Set the token when the button is clicked
+// Add token handling
 document.getElementById('submit-token').addEventListener('click', function() {
     GITHUB_TOKEN = document.getElementById('github-token').value;
 
     if (GITHUB_TOKEN) {
-        // Once the token is set, load the state from GitHub
         loadStateFromGitHub();
     } else {
         alert("Please enter a GitHub token!");
